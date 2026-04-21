@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Import both fonts from Google Fonts -->	
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;700&family=Henny+Penny&display=swap" rel="stylesheet">
+  <title>Hogwarts House Quiz</title>
+  <style>
+    body {
+      font-family: 'Crimson Text', serif;
+      margin:0;
+      background:url('background.jpg') no-repeat center center fixed;
+      background-size:cover;
+    }
+    header {
+      background:rgba(34,34,34,0);
+      color:#fff;
+      text-align:center;
+      padding:30px;
+    }
+    .card {
+      background:#fff;
+      margin:20px auto;
+      padding:20px;
+      width:100%;          /* Fill available width */
+      max-width:400px;     /* Cap at 400px */
+      border-radius:8px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.2);
+    }
+    button {
+	  font-family: 'Crimson Text', serif; 
+	  font-size: 18px;
+	  font-weight: 600;
+      margin-top:15px;
+      padding:20px 40px;
+      border:none;
+      border-radius:4px;
+      background:#297bff;
+      color:#fff;
+      cursor:pointer;
+    }
+    button:hover { background:#666; }
+    .animals {
+      display:flex;
+      justify-content:space-around;
+      margin-top:20px;
+    }
+    .animals img {
+      width:60px;
+      opacity:0;
+      transition:opacity 0.3s;
+    }
+	#app-logo{
+		max-width:300px;
+	}
+	.animals-card {
+	  background: rgba(0,0,0,0.5);   /* 50% black background */
+	  border:2px solid #fff;
+	  margin:20px auto;
+	  padding:10px;
+	  width:100%;          /* Fill available width */
+	  max-width:400px;     /* Cap at 400px */
+	  border-radius:8px;
+	}
+
+	.animals {
+	  display:flex;
+	  justify-content:space-around;
+	}
+
+	.animals img {
+	  width:60px;
+	  opacity:0;
+	  transition:opacity 0.3s;
+	}
+    .hidden { display:none; }
+    .center { text-align:center; }
+	.henny-penny {
+      font-family: 'Henny Penny', cursive;
+    }
+	#houseBadge {
+	  max-width: 300px;   /* nice big size, capped at 250px */
+	  width: 100%;        /* scales down on smaller screens */
+	  height: auto;       /* keeps proportions */
+	  display: block;
+	  margin: 20px auto;  /* centers it with breathing room */
+	  opacity: 0;
+	}
+	
+	/* Base hidden state */
+	#result, #houseName, #houseBadge, #houseMessage, #result button {
+	  opacity: 0;
+	}
+
+	/* Fade in */
+	.fade-in {
+	  animation: fadeIn 1s forwards;
+	}
+	@keyframes fadeIn {
+	  from { opacity: 0; }
+	  to   { opacity: 1; }
+	}
+
+	/* Scale in */
+	.scale-in {
+	  animation: scaleIn 2s forwards;
+	}
+	@keyframes scaleIn {
+	  from { transform: scale(0.5); opacity: 0; }
+	  to   { transform: scale(1); opacity: 1; }
+	}
+  </style>
+</head>
+<body>
+  <header>
+    <img src="company_logo.png" alt="Company Logo" height="60">
+  </header>
+  <!-- Splash Screen -->
+  <div id="splash" class="card center">
+	<img id="app-logo" src="app_logo.png" alt="App Logo">
+    <h1 class="henny-penny">Which House Are You?</h1>
+    <p>Be sorted into a Hogwarts house by answering a few questions.</p>
+    <button onclick="startQuiz()">Next</button>
+  </div>
+
+  <!-- Quiz Screen -->
+  <div id="quiz" class="card hidden center">
+    <h2 id="question"></h2>
+    <div id="answers"></div>
+  </div>
+  
+  <!-- Animals Card -->
+  <div id="animals" class="animals-card hidden">
+    <div class="animals">
+      <img id="gryffindor" src="lion.png" alt="Gryffindor Lion">
+      <img id="hufflepuff" src="badger.png" alt="Hufflepuff Badger">
+      <img id="ravenclaw" src="eagle.png" alt="Ravenclaw Eagle">
+      <img id="slytherin" src="snake.png" alt="Slytherin Snake">
+    </div>
+  </div>
+
+  <!-- Result Screen -->
+  <div id="result" class="card hidden center">
+    <h1 id="houseName" class="henny-penny"></h1>
+    <img id="houseBadge" alt="House Badge" height="100">
+    <p id="houseMessage"></p>
+    <button onclick="restartQuiz()">Restart</button>
+  </div>
+
+<script>
+const questions = [
+  { q:"You’re running late for an important appointment. What do you do?",
+    a:[{text:"Dash out the door and face the consequences head-on.","house":"gryffindor"},
+       {text:"Send a quick message apologizing and promise to make it up.","house":"hufflepuff"},
+       {text:"Recalculate the fastest route and adjust your plan.","house":"ravenclaw"},
+       {text:"Find a clever excuse or workaround to protect your image.","house":"slytherin"}] },
+  { q:"A friend asks you to help them move heavy furniture. How do you respond?",
+    a:[{text:"Jump in immediately, even if it’s tough.","house":"gryffindor"},
+       {text:"Cheerfully agree and stick with them until it’s done.","house":"hufflepuff"},
+       {text:"Suggest a smarter way to move it or tools to use.","house":"ravenclaw"},
+       {text:"Offer help if it benefits you, or negotiate a trade.","house":"slytherin"}] },
+  { q:"You’re at a party and don’t know many people. What’s your move?",
+    a:[{text:"Walk up to a group and introduce yourself boldly.","house":"gryffindor"},
+       {text:"Find someone sitting alone and strike up a kind conversation.","house":"hufflepuff"},
+       {text:"Observe the dynamics first, then join where you fit best.","house":"ravenclaw"},
+       {text:"Seek out the most influential person and make a connection.","house":"slytherin"}] },
+  { q:"You’ve got a free weekend with no plans. How do you spend it?",
+    a:[{text:"Go on an adventure or try something daring.","house":"gryffindor"},
+       {text:"Relax with family or help out a friend.","house":"hufflepuff"},
+       {text:"Dive into a book, project, or hobby to learn something new.","house":"ravenclaw"},
+       {text:"Work on personal goals or strategize for future success.","house":"slytherin"}] },
+  { q:"You’re given a chance to lead a small team at work or school. What’s your style?",
+    a:[{text:"Inspire everyone with energy and courage.","house":"gryffindor"},
+       {text:"Make sure everyone feels included and supported.","house":"hufflepuff"},
+       {text:"Organize tasks logically and encourage creative ideas.","house":"ravenclaw"},
+       {text:"Set ambitious goals and push the team to excel.","house":"slytherin"}] }
+];
+
+const scores = {gryffindor:0,hufflepuff:0,ravenclaw:0,slytherin:0};
+let current = 0;
+
+function startQuiz(){
+  document.getElementById("splash").classList.add("hidden");
+  document.getElementById("quiz").classList.remove("hidden");
+  document.getElementById("animals").classList.remove("hidden");
+  showQuestion();
+}
+
+function showQuestion(){
+  const q = questions[current];
+  document.getElementById("question").textContent = q.q;
+  const answersDiv = document.getElementById("answers");
+  answersDiv.innerHTML="";
+  q.a.forEach(ans=>{
+    const btn=document.createElement("button");
+    btn.textContent=ans.text;
+    btn.onclick=()=>selectAnswer(ans.house);
+    answersDiv.appendChild(btn);
+  });
+}
+
+function selectAnswer(house){
+  scores[house]+=1;
+  const img=document.getElementById(house);
+  let newOpacity=Math.min(parseFloat(img.style.opacity||0)+0.2,1);
+  img.style.opacity=newOpacity;
+  current++;
+  if(current<questions.length){ showQuestion(); }
+  else { showResult(); }
+}
+
+function showResult(){
+  document.getElementById("animals").classList.add("hidden");
+  document.getElementById("quiz").classList.add("hidden");
+  const resultCard = document.getElementById("result");
+  resultCard.classList.remove("hidden");
+
+  const maxScore = Math.max(...Object.values(scores));
+  const topHouses = Object.keys(scores).filter(h=>scores[h]===maxScore);
+  const chosen = topHouses[Math.floor(Math.random()*topHouses.length)];
+  const houseInfo = {
+    gryffindor:{name:"Gryffindor",badge:"gryffindor_badge.png",msg:"You are brave and daring, always ready to face challenges head-on."},
+    hufflepuff:{name:"Hufflepuff",badge:"hufflepuff_badge.png",msg:"You are loyal and kind, valuing fairness and friendship above all."},
+    ravenclaw:{name:"Ravenclaw",badge:"ravenclaw_badge.png",msg:"You are wise and curious, always seeking knowledge and creativity."},
+    slytherin:{name:"Slytherin",badge:"slytherin_badge.png",msg:"You are ambitious and resourceful, striving for success and influence."}
+  };
+
+  const houseName = document.getElementById("houseName");
+  const houseBadge = document.getElementById("houseBadge");
+  const houseMessage = document.getElementById("houseMessage");
+  const restartBtn = resultCard.querySelector("button");
+
+  houseName.textContent = houseInfo[chosen].name;
+  houseBadge.src = houseInfo[chosen].badge;
+  houseMessage.textContent = houseInfo[chosen].msg;
+
+  // Animate sequence
+  resultCard.classList.add("fade-in");
+  setTimeout(()=>houseName.classList.add("fade-in"), 1000);
+  setTimeout(()=>houseBadge.classList.add("scale-in"), 2000);
+  setTimeout(()=>houseMessage.classList.add("fade-in"), 3000);
+  setTimeout(()=>restartBtn.classList.add("fade-in"), 4000);
+}
+
+
+function restartQuiz(){
+  current = 0;
+  for(let h in scores){
+    scores[h] = 0;
+    document.getElementById(h).style.opacity = 0;
+  }
+
+  // Reset result screen elements
+  const resultCard = document.getElementById("result");
+  const houseName = document.getElementById("houseName");
+  const houseBadge = document.getElementById("houseBadge");
+  const houseMessage = document.getElementById("houseMessage");
+  const restartBtn = resultCard.querySelector("button");
+
+  // Remove animation classes
+  resultCard.classList.remove("fade-in");
+  houseName.classList.remove("fade-in");
+  houseBadge.classList.remove("scale-in");
+  houseMessage.classList.remove("fade-in");
+  restartBtn.classList.remove("fade-in");
+
+  // Reset opacity
+  resultCard.style.opacity = 0;
+  houseName.style.opacity = 0;
+  houseBadge.style.opacity = 0;
+  houseMessage.style.opacity = 0;
+  restartBtn.style.opacity = 0;
+
+  // Hide result, show splash
+  resultCard.classList.add("hidden");
+  document.getElementById("splash").classList.remove("hidden");
+}
+
+</script>
+</body>
+</html>
